@@ -46,5 +46,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Hartkorn Paprika (edelsüß)",
+    "qty": 1,
+    "mhd": "2030-01-01",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/000/004/052/6263/front_en.12.200.jpg"
   }
 ]
