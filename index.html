@@ -167,13 +167,14 @@
 
     let html5QrCode = null;
     let inventory = [];
-    let currentSha = null; // Wird von GitHub API zur Konfliktvermeidung benötigt
+    let currentSha = null;
+    let autoSaveTimer = null; // Timer für automatische Speicherung
 
     // Helper: Base64 Utf8 Encoding/Decoding
     const utf8ToBase64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
     const base64ToUtf8 = (str) => new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0)));
 
-    // --- GitHub Einstellungen laden/speichern ---
+    // --- GitHub Einstellungen ---
     function getGHConfig() {
       return {
         owner: localStorage.getItem('gh_owner') || '',
@@ -202,6 +203,21 @@
       loadFromGitHub();
     });
 
+    // --- Auto-Save Logik ---
+    function triggerAutoSave() {
+      // Status anzeigen
+      fileStatus.textContent = 'Ungespeichert...';
+      fileStatus.className = 'badge bg-warning text-dark';
+      
+      // Vorherigen Timer abbrechen, falls der Nutzer erneut geklickt hat
+      clearTimeout(autoSaveTimer);
+
+      // Nach 1.5 Sekunden Inaktivität automatisch speichern
+      autoSaveTimer = setTimeout(() => {
+        saveToGitHub(true); // silent = true
+      }, 1500);
+    }
+
     // --- GitHub REST API Sync ---
     async function loadFromGitHub() {
       const cfg = getGHConfig();
@@ -225,10 +241,9 @@
         });
 
         if (res.status === 404) {
-          // Datei existiert im Repo noch nicht -> leere Liste anlegen
           inventory = [];
           currentSha = null;
-          fileStatus.textContent = 'Neue Datei';
+          fileStatus.textContent = 'Bereit';
           fileStatus.className = 'badge bg-success';
           btnSave.disabled = false;
           renderTable();
@@ -253,19 +268,20 @@
       }
     }
 
-    async function saveToGitHub() {
+    async function saveToGitHub(isAutoSave = false) {
       const cfg = getGHConfig();
       if (!cfg.owner || !cfg.repo || !cfg.token) return;
 
+      fileStatus.textContent = 'Speichert...';
+      fileStatus.className = 'badge bg-info';
       btnSave.disabled = true;
-      btnSave.textContent = 'Speichert...';
 
       try {
         const jsonString = JSON.stringify(inventory, null, 2);
         const base64Content = utf8ToBase64(jsonString);
 
         const bodyData = {
-          message: 'Vorrat aktualisiert (App Sync)',
+          message: isAutoSave ? 'Vorrat aktualisiert (Auto-Save)' : 'Vorrat aktualisiert (App Sync)',
           content: base64Content
         };
         if (currentSha) bodyData.sha = currentSha;
@@ -283,20 +299,23 @@
         if (!res.ok) throw new Error(`HTTP Fehler ${res.status}`);
 
         const resData = await res.json();
-        currentSha = resData.content.sha; // Neuen SHA-Hash für das nächste Speichern merken
+        currentSha = resData.content.sha;
 
         fileStatus.textContent = 'Gespeichert';
         fileStatus.className = 'badge bg-success';
-        alert('Erfolgreich auf GitHub gespeichert!');
+
+        // Bei manuellem Klick weiterhin Alert anzeigen
+        if (!isAutoSave) alert('Erfolgreich auf GitHub gespeichert!');
       } catch (err) {
-        alert('Fehler beim Speichern: ' + err.message);
+        fileStatus.textContent = 'Speicherfehler';
+        fileStatus.className = 'badge bg-danger';
+        if (!isAutoSave) alert('Fehler beim Speichern: ' + err.message);
       } finally {
         btnSave.disabled = false;
-        btnSave.textContent = 'Speichern';
       }
     }
 
-    btnSave.addEventListener('click', saveToGitHub);
+    btnSave.addEventListener('click', () => saveToGitHub(false));
 
     // --- Barcode Scanner Logik ---
     scannerModal._element.addEventListener('shown.bs.modal', async () => {
@@ -404,7 +423,7 @@
       }
     });
 
-    // --- Tabellen-Rendering ---
+    // --- Tabellen-Rendering & Aktionen ---
     function renderTable() {
       tableBody.innerHTML = '';
       if (inventory.length === 0) {
@@ -436,11 +455,13 @@
       inventory[index].qty += delta;
       if (inventory[index].qty <= 0) inventory.splice(index, 1);
       renderTable();
+      triggerAutoSave(); // Auto-Save auslösen
     };
 
     window.removeItem = (index) => {
       inventory.splice(index, 1);
       renderTable();
+      triggerAutoSave(); // Auto-Save auslösen
     };
 
     form.addEventListener('submit', (e) => {
@@ -452,13 +473,14 @@
       inventory.push({ name, qty, location });
       renderTable();
       form.reset();
+      triggerAutoSave(); // Auto-Save auslösen
     });
 
     function escapeHtml(text) {
       return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // Beim Start Einstellungen füllen & Daten von GitHub abrufen
+    // Beim Start Einstellungen füllen & Daten abrufen
     window.addEventListener('DOMContentLoaded', () => {
       fillSettingsForm();
       loadFromGitHub();
