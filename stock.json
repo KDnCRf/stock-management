@@ -30,5 +30,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Ankerkraut Teufelskerl",
+    "qty": 1,
+    "mhd": "2028-11-11",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/426/034/789/3338/front_de.8.200.jpg"
   }
 ]
