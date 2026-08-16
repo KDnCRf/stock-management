@@ -166,5 +166,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/1453/front_de.11.200.jpg"
+  },
+  {
+    "name": "Ostmann Kurkuma gemahlen",
+    "qty": 1,
+    "mhd": "2029-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1934/front_de.5.200.jpg"
   }
 ]
