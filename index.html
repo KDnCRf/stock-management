@@ -33,8 +33,8 @@
     <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
       <h1 class="h3 mb-0">🍏 Vorratsverwalter</h1>
       <div class="d-flex align-items-center gap-2">
-        <span id="fileStatus" class="badge bg-secondary">Keine Datei verknüpft</span>
-        <button id="btnSelectFile" class="btn btn-outline-primary btn-sm">CSV Auswählen</button>
+        <span id="fileStatus" class="badge bg-secondary">Nicht verbunden</span>
+        <button id="btnSettings" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#settingsModal">⚙️ Token</button>
         <button id="btnSave" class="btn btn-primary btn-sm" disabled>Speichern</button>
       </div>
     </header>
@@ -61,8 +61,40 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" id="btnCloseScanner" aria-label="Schließen"></button>
           </div>
           <div class="modal-body p-2 text-center">
-            <!-- Kamera-Vorschau -->
             <div id="reader" style="width: 100%; min-height: 250px;" class="rounded overflow-hidden bg-black"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal für GitHub-Einstellungen -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header py-2">
+            <h5 class="modal-title h6" id="settingsModalLabel">⚙️ GitHub Verbinden</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+          </div>
+          <div class="modal-body">
+            <form id="settingsForm">
+              <div class="mb-2">
+                <label class="form-label small mb-1">GitHub Benutzername</label>
+                <input type="text" id="ghOwner" class="form-control form-control-sm" required placeholder="z. B. maxmustermann">
+              </div>
+              <div class="mb-2">
+                <label class="form-label small mb-1">Repository Name</label>
+                <input type="text" id="ghRepo" class="form-control form-control-sm" required placeholder="z. B. vorrat">
+              </div>
+              <div class="mb-2">
+                <label class="form-label small mb-1">Dateiname im Repo</label>
+                <input type="text" id="ghPath" class="form-control form-control-sm" value="vorrat.json" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small mb-1">Personal Access Token (PAT)</label>
+                <input type="password" id="ghToken" class="form-control form-control-sm" required placeholder="github_pat_...">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm w-100">Verbindung Speichern</button>
+            </form>
           </div>
         </div>
       </div>
@@ -109,66 +141,186 @@
         </thead>
         <tbody id="inventoryBody">
           <tr>
-            <td colspan="4" class="text-center text-muted">Lade Daten...</td>
+            <td colspan="4" class="text-center text-muted">Lade Daten von GitHub...</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Bootstrap 5 Bundle JS (Erforderlich für Modal-Funktion!) -->
+  <!-- Bootstrap 5 Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // --- DOM Elemente zentral deklarieren ---
-    const btnSelectFile = document.getElementById('btnSelectFile');
+    // --- DOM Elemente ---
     const btnSave = document.getElementById('btnSave');
     const fileStatus = document.getElementById('fileStatus');
     const form = document.getElementById('addItemForm');
     const tableBody = document.getElementById('inventoryBody');
+    const settingsForm = document.getElementById('settingsForm');
     
     const offSearchInput = document.getElementById('offSearchInput');
     const btnOffSearch = document.getElementById('btnOffSearch');
     const offSearchResults = document.getElementById('offSearchResults');
     const scannerModal = document.getElementById('scannerModal');
+    const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
 
     let html5QrCode = null;
-    let fileHandle = null;
     let inventory = [];
+    let currentSha = null; // Wird von GitHub API zur Konfliktvermeidung benötigt
 
-    // --- Kamera Barcode-Scanner Logik ---
-    scannerModal.addEventListener('shown.bs.modal', async () => {
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
-      }
-      
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 150 },
-        aspectRatio: 1.0
+    // Helper: Base64 Utf8 Encoding/Decoding
+    const utf8ToBase64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
+    const base64ToUtf8 = (str) => new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0)));
+
+    // --- GitHub Einstellungen laden/speichern ---
+    function getGHConfig() {
+      return {
+        owner: localStorage.getItem('gh_owner') || '',
+        repo: localStorage.getItem('gh_repo') || '',
+        path: localStorage.getItem('gh_path') || 'vorrat.json',
+        token: localStorage.getItem('gh_token') || ''
       };
+    }
+
+    function fillSettingsForm() {
+      const cfg = getGHConfig();
+      document.getElementById('ghOwner').value = cfg.owner;
+      document.getElementById('ghRepo').value = cfg.repo;
+      document.getElementById('ghPath').value = cfg.path;
+      document.getElementById('ghToken').value = cfg.token;
+    }
+
+    settingsForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      localStorage.setItem('gh_owner', document.getElementById('ghOwner').value.trim());
+      localStorage.setItem('gh_repo', document.getElementById('ghRepo').value.trim());
+      localStorage.setItem('gh_path', document.getElementById('ghPath').value.trim());
+      localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+      
+      settingsModal.hide();
+      loadFromGitHub();
+    });
+
+    // --- GitHub REST API Sync ---
+    async function loadFromGitHub() {
+      const cfg = getGHConfig();
+      if (!cfg.owner || !cfg.repo || !cfg.token) {
+        fileStatus.textContent = 'Token fehlt';
+        fileStatus.className = 'badge bg-warning text-dark';
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Klicke oben auf "⚙️ Token", um GitHub zu verbinden.</td></tr>';
+        settingsModal.show();
+        return;
+      }
+
+      fileStatus.textContent = 'Lade...';
+      fileStatus.className = 'badge bg-info';
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`, {
+          headers: {
+            'Authorization': `Bearer ${cfg.token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (res.status === 404) {
+          // Datei existiert im Repo noch nicht -> leere Liste anlegen
+          inventory = [];
+          currentSha = null;
+          fileStatus.textContent = 'Neue Datei';
+          fileStatus.className = 'badge bg-success';
+          btnSave.disabled = false;
+          renderTable();
+          return;
+        }
+
+        if (!res.ok) throw new Error(`HTTP Fehler ${res.status}`);
+
+        const data = await res.json();
+        currentSha = data.sha;
+        const jsonText = base64ToUtf8(data.content.replace(/\n/g, ''));
+        inventory = JSON.parse(jsonText);
+
+        fileStatus.textContent = 'Synchronisiert';
+        fileStatus.className = 'badge bg-success';
+        btnSave.disabled = false;
+        renderTable();
+      } catch (err) {
+        fileStatus.textContent = 'Sync Fehler';
+        fileStatus.className = 'badge bg-danger';
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Fehler beim Laden: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    async function saveToGitHub() {
+      const cfg = getGHConfig();
+      if (!cfg.owner || !cfg.repo || !cfg.token) return;
+
+      btnSave.disabled = true;
+      btnSave.textContent = 'Speichert...';
+
+      try {
+        const jsonString = JSON.stringify(inventory, null, 2);
+        const base64Content = utf8ToBase64(jsonString);
+
+        const bodyData = {
+          message: 'Vorrat aktualisiert (App Sync)',
+          content: base64Content
+        };
+        if (currentSha) bodyData.sha = currentSha;
+
+        const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${cfg.token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        if (!res.ok) throw new Error(`HTTP Fehler ${res.status}`);
+
+        const resData = await res.json();
+        currentSha = resData.content.sha; // Neuen SHA-Hash für das nächste Speichern merken
+
+        fileStatus.textContent = 'Gespeichert';
+        fileStatus.className = 'badge bg-success';
+        alert('Erfolgreich auf GitHub gespeichert!');
+      } catch (err) {
+        alert('Fehler beim Speichern: ' + err.message);
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Speichern';
+      }
+    }
+
+    btnSave.addEventListener('click', saveToGitHub);
+
+    // --- Barcode Scanner Logik ---
+    scannerModal._element.addEventListener('shown.bs.modal', async () => {
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+      
+      const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
 
       try {
         await html5QrCode.start(
           { facingMode: "environment" },
           config,
           async (decodedText) => {
-            // Erfolgreich gescannt -> Kamera sofort stoppen
             await stopScanner();
-            
-            // Modal schließen
-            const modalInstance = bootstrap.Modal.getInstance(scannerModal);
+            const modalInstance = bootstrap.Modal.getInstance(scannerModal._element);
             if (modalInstance) modalInstance.hide();
 
-            // Wert ins Textfeld setzen und Suche starten
             offSearchInput.value = decodedText;
             searchOpenFoodFacts(decodedText);
           },
-          () => { /* Ignoriere Einzelframe-Fehler */ }
+          () => {}
         );
       } catch (err) {
-        alert("Kamera-Zugriff nicht möglich. Bitte Berechtigung in Safari/iOS prüfen.");
-        const modalInstance = bootstrap.Modal.getInstance(scannerModal);
+        alert("Kamera-Zugriff nicht möglich.");
+        const modalInstance = bootstrap.Modal.getInstance(scannerModal._element);
         if (modalInstance) modalInstance.hide();
       }
     });
@@ -176,43 +328,13 @@
     async function stopScanner() {
       if (html5QrCode) {
         try {
-          if (html5QrCode.isScanning) {
-            await html5QrCode.stop();
-          }
+          if (html5QrCode.isScanning) await html5QrCode.stop();
           html5QrCode.clear();
-        } catch (e) {
-          console.log("Scanner-Stopp Hinweis:", e);
-        }
+        } catch (e) {}
       }
     }
 
-    scannerModal.addEventListener('hide.bs.modal', stopScanner);
-
-    // --- IndexedDB ---
-    function openDB() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open("FoodStorageDB", 1);
-        req.onupgradeneeded = () => req.result.createObjectStore("handles");
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function saveFileHandle(handle) {
-      const db = await openDB();
-      const tx = db.transaction("handles", "readwrite");
-      tx.objectStore("handles").put(handle, "csvFile");
-    }
-
-    async function getStoredFileHandle() {
-      const db = await openDB();
-      return new Promise((resolve) => {
-        const tx = db.transaction("handles", "readonly");
-        const req = tx.objectStore("handles").get("csvFile");
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => resolve(null);
-      });
-    }
+    scannerModal._element.addEventListener('hide.bs.modal', stopScanner);
 
     // --- Open Food Facts API ---
     async function searchOpenFoodFacts(query) {
@@ -282,27 +404,11 @@
       }
     });
 
-    // --- CSV Logik ---
-    function parseCSV(text) {
-      const lines = text.trim().split('\n');
-      if (lines.length <= 1) return [];
-      
-      return lines.slice(1).filter(l => l.trim()).map(line => {
-        const [name, qty, location] = line.split(';').map(s => s.trim());
-        return { name, qty: parseInt(qty) || 1, location: location || 'Sonstiges' };
-      });
-    }
-
-    function generateCSV(data) {
-      const header = 'Artikel;Menge;Ablageort\r\n';
-      const rows = data.map(item => `${item.name};${item.qty};${item.location}`).join('\r\n');
-      return header + rows;
-    }
-
+    // --- Tabellen-Rendering ---
     function renderTable() {
       tableBody.innerHTML = '';
       if (inventory.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Die Liste ist leer.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Der Vorrat ist aktuell leer.</td></tr>';
         return;
       }
 
@@ -348,71 +454,15 @@
       form.reset();
     });
 
-    // --- Datei Handling ---
-    async function loadFileFromHandle(handle) {
-      try {
-        const options = { mode: 'readwrite' };
-        if ((await handle.queryPermission(options)) !== 'granted') {
-          if ((await handle.requestPermission(options)) !== 'granted') return false;
-        }
-
-        const file = await handle.getFile();
-        const text = await file.text();
-        inventory = parseCSV(text);
-        fileHandle = handle;
-        
-        fileStatus.textContent = file.name;
-        fileStatus.className = 'badge bg-success';
-        btnSave.disabled = false;
-        renderTable();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      const savedHandle = await getStoredFileHandle();
-      if (savedHandle) {
-        const success = await loadFileFromHandle(savedHandle);
-        if (!success) {
-          tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Klicke auf "CSV Auswählen", um die Datei erneut zu verknüpfen.</td></tr>';
-        }
-      } else {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Keine Datei verknüpft. Bitte einmalig eine CSV auswählen.</td></tr>';
-      }
-    });
-
-    btnSelectFile.addEventListener('click', async () => {
-      try {
-        const [handle] = await window.showOpenFilePicker({
-          types: [{ description: 'CSV Dateien', accept: { 'text/csv': ['.csv'] } }],
-          multiple: false
-        });
-        
-        if (await loadFileFromHandle(handle)) {
-          await saveFileHandle(handle);
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError') alert('Fehler beim Auswählen der Datei.');
-      }
-    });
-
-    btnSave.addEventListener('click', async () => {
-      if (!fileHandle) return;
-      try {
-        const writable = await fileHandle.createWritable();
-        await writable.write(generateCSV(inventory));
-        await writable.close();
-        alert('Erfolgreich gespeichert!');
-      } catch (err) {
-        alert('Fehler beim Speichern.');
-      }
-    });
-
     function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+      return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
+
+    // Beim Start Einstellungen füllen & Daten von GitHub abrufen
+    window.addEventListener('DOMContentLoaded', () => {
+      fillSettingsForm();
+      loadFromGitHub();
+    });
   </script>
 </body>
 </html>
