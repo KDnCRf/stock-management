@@ -86,5 +86,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/1446/front_en.5.200.jpg"
+  },
+  {
+    "name": "Ostmann Gulasch Gwürzzubereitung",
+    "qty": 1,
+    "mhd": "2026-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/2559/front_de.16.200.jpg"
   }
 ]
