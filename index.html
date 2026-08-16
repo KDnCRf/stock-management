@@ -55,7 +55,7 @@
         <i class="bi bi-basket2-fill text-success"></i> Vorrat
       </h1>
       <div class="d-flex align-items-center gap-3">
-        <!-- Dezentes Disketten-Icon als Statusanzeige -->
+        <!-- Statusanzeige Disketten-Icon -->
         <div id="saveStatus" class="d-flex align-items-center gap-1 text-secondary" title="Status: Initialisieren...">
           <i id="saveIcon" class="bi bi-floppy-fill save-indicator text-secondary"></i>
         </div>
@@ -488,7 +488,7 @@
 
               btn.innerHTML = `
                 ${imgTag}
-                <span class="text-truncate fw-medium">${escapeHtml(name)}</span>
+                <span class="fw-medium text-break">${escapeHtml(name)}</span>
               `;
               btn.onclick = () => {
                 fillFormWithProduct(name, imgUrl);
@@ -602,12 +602,13 @@
             <!-- Bild & Details -->
             <div class="d-flex align-items-center gap-3 overflow-hidden flex-grow-1">
               ${imageElement}
-              <div class="overflow-hidden">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="fw-bold text-body fs-6 text-truncate d-block" title="${escapeHtml(item.name)}">
+              <div class="overflow-hidden flex-grow-1">
+                <!-- Menge in weiß vor dem mehrzeiligen Produktnamen -->
+                <div class="d-flex align-items-start gap-2 mb-1">
+                  <span class="badge bg-dark text-white rounded-pill px-2 py-1 flex-shrink-0 mt-1">${item.qty}x</span>
+                  <span class="fw-bold text-body fs-6 text-break">
                     ${escapeHtml(item.name)}
                   </span>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">${item.qty}x</span>
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-1 gap-md-2">
                   ${getMhdBadge(item.mhd)}
