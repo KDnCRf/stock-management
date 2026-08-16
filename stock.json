@@ -230,5 +230,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": ""
+  },
+  {
+    "name": "Maggi Schnitzel Sauce",
+    "qty": 1,
+    "mhd": "2025-12-01",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": ""
   }
 ]
