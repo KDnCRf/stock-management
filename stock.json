@@ -94,5 +94,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/2559/front_de.16.200.jpg"
+  },
+  {
+    "name": "Ostmann Chili con Carne Gewürzmischung",
+    "qty": 1,
+    "mhd": "2027-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1460/front_de.15.200.jpg"
   }
 ]
