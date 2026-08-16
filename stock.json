@@ -222,5 +222,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": ""
+  },
+  {
+    "name": "Pfeffer Körner",
+    "qty": 1,
+    "mhd": "",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
