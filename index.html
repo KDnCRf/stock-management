@@ -3,25 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- App-Titel auf dem Home-Bildschirm -->
-<meta name="apple-mobile-web-app-title" content="Vorrat">
-
-<!-- Aktiviert den Vollbildmodus (versteckt Safari-Steuerung) -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<!-- Farbe der Statusleiste oben (default, black, oder black-translucent) -->
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-<!-- App-Icon für iOS (optional: durch deinen eigenen Bild-Link ersetzen) -->
-<link rel="apple-touch-icon" href="https://fav.farm/🍏">
+  
+  <!-- WebApp & iOS Tags -->
+  <meta name="apple-mobile-web-app-title" content="Vorrat">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="https://fav.farm/🍏">
   
   <title>Lebensmittelverwalter</title>
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- HTML5-QRCode Scanner Bibliothek -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- HTML5-QRCode Scanner Bibliothek -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   
   <script>
     const setScheme = () => {
@@ -45,33 +40,33 @@
     </header>
 
     <!-- Open Food Facts Suche & Barcode Scan -->
-<div class="card mb-3 border-info-subtle bg-info-subtle bg-opacity-10">
-  <div class="card-body py-2">
-    <label class="form-label small fw-bold text-info-emphasis mb-1">🔍 Open Food Facts Suche / Barcode Scan</label>
-    <div class="input-group input-group-sm">
-      <input type="text" id="offSearchInput" class="form-control" placeholder="Barcode oder Produktname...">
-      <button class="btn btn-outline-info" type="button" id="btnStartScan" data-bs-toggle="modal" data-bs-target="#scannerModal">📷 Scan</button>
-      <button class="btn btn-info text-white" type="button" id="btnOffSearch">Suchen</button>
+    <div class="card mb-3 border-info-subtle bg-info-subtle bg-opacity-10 position-relative">
+      <div class="card-body py-2">
+        <label class="form-label small fw-bold text-info-emphasis mb-1">🔍 Open Food Facts Suche / Barcode Scan</label>
+        <div class="input-group input-group-sm">
+          <input type="text" id="offSearchInput" class="form-control" placeholder="Barcode oder Produktname...">
+          <button class="btn btn-outline-info" type="button" id="btnStartScan" data-bs-toggle="modal" data-bs-target="#scannerModal">📷 Scan</button>
+          <button class="btn btn-info text-white" type="button" id="btnOffSearch">Suchen</button>
+        </div>
+        <div id="offSearchResults" class="list-group position-absolute w-100 shadow-sm mt-1" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+      </div>
     </div>
-    <div id="offSearchResults" class="list-group position-absolute w-100 shadow-sm mt-1" style="z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
-  </div>
-</div>
 
-<!-- Modal für Kamera-Kader -->
-<div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header py-2">
-        <h5 class="modal-title h6" id="scannerModalLabel">📷 Barcode scannen</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" id="btnCloseScanner" aria-label="Schließen"></button>
-      </div>
-      <div class="modal-body p-2 text-center">
-        <!-- Kamera-Vorschau -->
-        <div id="reader" style="width: 100%; min-height: 250px;" class="rounded overflow-hidden"></div>
+    <!-- Modal für Kamera-Kader -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header py-2">
+            <h5 class="modal-title h6" id="scannerModalLabel">📷 Barcode scannen</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" id="btnCloseScanner" aria-label="Schließen"></button>
+          </div>
+          <div class="modal-body p-2 text-center">
+            <!-- Kamera-Vorschau -->
+            <div id="reader" style="width: 100%; min-height: 250px;" class="rounded overflow-hidden bg-black"></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
     <!-- Formular zum Hinzufügen -->
     <div class="card mb-4">
@@ -121,65 +116,11 @@
     </div>
   </div>
 
+  <!-- Bootstrap 5 Bundle JS (Erforderlich für Modal-Funktion!) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-let html5QrCode = null;
-
-const scannerModal = document.getElementById('scannerModal');
-
-// Startet die Kamera beim Öffnen des Modals
-scannerModal.addEventListener('shown.bs.modal', async () => {
-  html5QrCode = new Html5Qrcode("reader");
-  
-  const config = {
-    fps: 10,
-    qrbox: { width: 250, height: 150 }, // Rechteckig, ideal für Strichcodes
-    aspectRatio: 1.0
-  };
-
-  try {
-    // Startet bevorzugt die Rückkamera (environment)
-    await html5QrCode.start(
-      { facingMode: "environment" },
-      config,
-      (decodedText) => {
-        // Erfolgreich gescannt
-        stopScanner();
-        
-        // Modal schließen
-        const modalInstance = bootstrap.Modal.getInstance(scannerModal);
-        if (modalInstance) modalInstance.hide();
-
-        // Barcode eintragen & Suche auslösen
-        offSearchInput.value = decodedText;
-        searchOpenFoodFacts(decodedText);
-      },
-      (errorMessage) => {
-        // Einzelne fehlgeschlagene Frames ignorieren
-      }
-    );
-  } catch (err) {
-    alert("Kamera-Zugriff nicht möglich. Bitte Berechtigung in iOS prüfen.");
-    const modalInstance = bootstrap.Modal.getInstance(scannerModal);
-    if (modalInstance) modalInstance.hide();
-  }
-});
-
-// Stoppt die Kamera beim Schließen des Modals
-async function stopScanner() {
-  if (html5QrCode && html5QrCode.isScanning) {
-    await html5QrCode.stop();
-    html5QrCode.clear();
-  }
-}
-
-scannerModal.addEventListener('hide.bs.modal', stopScanner);
-
-
-
-    
-    let fileHandle = null;
-    let inventory = [];
-
+    // --- DOM Elemente zentral deklarieren ---
     const btnSelectFile = document.getElementById('btnSelectFile');
     const btnSave = document.getElementById('btnSave');
     const fileStatus = document.getElementById('fileStatus');
@@ -189,6 +130,63 @@ scannerModal.addEventListener('hide.bs.modal', stopScanner);
     const offSearchInput = document.getElementById('offSearchInput');
     const btnOffSearch = document.getElementById('btnOffSearch');
     const offSearchResults = document.getElementById('offSearchResults');
+    const scannerModal = document.getElementById('scannerModal');
+
+    let html5QrCode = null;
+    let fileHandle = null;
+    let inventory = [];
+
+    // --- Kamera Barcode-Scanner Logik ---
+    scannerModal.addEventListener('shown.bs.modal', async () => {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+      
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 150 },
+        aspectRatio: 1.0
+      };
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          async (decodedText) => {
+            // Erfolgreich gescannt -> Kamera sofort stoppen
+            await stopScanner();
+            
+            // Modal schließen
+            const modalInstance = bootstrap.Modal.getInstance(scannerModal);
+            if (modalInstance) modalInstance.hide();
+
+            // Wert ins Textfeld setzen und Suche starten
+            offSearchInput.value = decodedText;
+            searchOpenFoodFacts(decodedText);
+          },
+          () => { /* Ignoriere Einzelframe-Fehler */ }
+        );
+      } catch (err) {
+        alert("Kamera-Zugriff nicht möglich. Bitte Berechtigung in Safari/iOS prüfen.");
+        const modalInstance = bootstrap.Modal.getInstance(scannerModal);
+        if (modalInstance) modalInstance.hide();
+      }
+    });
+
+    async function stopScanner() {
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+          }
+          html5QrCode.clear();
+        } catch (e) {
+          console.log("Scanner-Stopp Hinweis:", e);
+        }
+      }
+    }
+
+    scannerModal.addEventListener('hide.bs.modal', stopScanner);
 
     // --- IndexedDB ---
     function openDB() {
@@ -224,7 +222,6 @@ scannerModal.addEventListener('hide.bs.modal', stopScanner);
       const isBarcode = /^\d+$/.test(query.trim());
 
       if (isBarcode) {
-        // Direkte Barcode-Abfrage
         try {
           const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${query.trim()}.json`);
           const data = await res.json();
@@ -238,7 +235,6 @@ scannerModal.addEventListener('hide.bs.modal', stopScanner);
           alert('Fehler bei der Barcode-Abfrage.');
         }
       } else {
-        // Text-Suche
         try {
           const res = await fetch(`https://de.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=5`);
           const data = await res.json();
@@ -280,7 +276,6 @@ scannerModal.addEventListener('hide.bs.modal', stopScanner);
       }
     });
 
-    // Klick außerhalb schließt Suchergebnisse
     document.addEventListener('click', (e) => {
       if (!offSearchInput.contains(e.target) && !offSearchResults.contains(e.target)) {
         offSearchResults.innerHTML = '';
