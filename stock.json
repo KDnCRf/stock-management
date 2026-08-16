@@ -4,5 +4,12 @@
     "qty": 1,
     "mhd": "",
     "location": "Vorratsschrank"
+  },
+  {
+    "name": "Spaghettoni n.7 Nudeln",
+    "qty": 1,
+    "mhd": "",
+    "location": "Vorratsschrank",
+    "image": "https://images.openfoodfacts.org/images/products/807/680/815/0072/front_fr.365.200.jpg"
   }
 ]
