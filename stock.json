@@ -158,5 +158,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/000/004/052/6010/front_de.6.200.jpg"
+  },
+  {
+    "name": "Ostmann Chilli scharf",
+    "qty": 1,
+    "mhd": "2026-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1453/front_de.11.200.jpg"
   }
 ]
