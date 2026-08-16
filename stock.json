@@ -262,5 +262,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/402/790/011/5982/front_de.10.200.jpg"
+  },
+  {
+    "name": "Ostmann Let‘s Do Air Fryer Pommes",
+    "qty": 1,
+    "mhd": "2029-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
