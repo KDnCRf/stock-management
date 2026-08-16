@@ -28,7 +28,7 @@
   </script>
 
   <style>
-    /* Custom Styling für moderneres Touch-Layout */
+    /* Custom Styling für Touch-Layout und Bilder */
     .inventory-card {
       transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
@@ -51,6 +51,11 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+    }
+    .product-img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -126,7 +131,7 @@
               <button class="btn btn-outline-secondary border-end-0" type="button" id="btnStartScan" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Barcode scannen">📷</button>
               <button class="btn btn-outline-secondary rounded-end-3" type="button" id="btnOffSearch" title="In Datenbank suchen">🔍</button>
             </div>
-            <div id="offSearchResults" class="list-group position-absolute w-100 shadow mt-1 rounded-3" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+            <div id="offSearchResults" class="list-group position-absolute w-100 shadow mt-1 rounded-3" style="z-index: 1050; max-height: 220px; overflow-y: auto;"></div>
           </div>
 
           <div class="col-6 col-md-2">
@@ -204,6 +209,7 @@
     let inventory = [];
     let currentSha = null;
     let autoSaveTimer = null;
+    let selectedImageUrl = ''; // Zwischenspeicher für ausgewählte Bild-URL
 
     // Helper: Base64 Utf8 Encoding/Decoding
     const utf8ToBase64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
@@ -376,7 +382,7 @@
 
     scannerModal.addEventListener('hide.bs.modal', stopScanner);
 
-    // --- Open Food Facts API ---
+    // --- Open Food Facts API (inkl. Bildabruf) ---
     async function searchOpenFoodFacts(query) {
       offSearchResults.innerHTML = '';
       if (!query.trim()) return;
@@ -389,7 +395,8 @@
           const data = await res.json();
           if (data.status === 1) {
             const pName = data.product.product_name_de || data.product.product_name || 'Unbekanntes Produkt';
-            fillFormWithProduct(pName);
+            const imgUrl = data.product.image_front_small_url || data.product.image_small_url || data.product.image_url || '';
+            fillFormWithProduct(pName, imgUrl);
           } else {
             alert('Kein Produkt zu diesem Barcode gefunden.');
           }
@@ -404,12 +411,22 @@
           if (data.products && data.products.length > 0) {
             data.products.forEach(p => {
               const name = p.product_name_de || p.product_name || 'Unbekannt';
+              const imgUrl = p.image_front_small_url || p.image_small_url || p.image_url || '';
+              
               const btn = document.createElement('button');
               btn.type = 'button';
-              btn.className = 'list-group-item list-group-item-action py-2 small';
-              btn.textContent = name;
+              btn.className = 'list-group-item list-group-item-action py-2 small d-flex align-items-center gap-2';
+              
+              const imgTag = imgUrl 
+                ? `<img src="${escapeHtml(imgUrl)}" class="rounded flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">`
+                : `<span class="flex-shrink-0 text-center" style="width: 32px; font-size: 1.2rem;">📦</span>`;
+
+              btn.innerHTML = `
+                ${imgTag}
+                <span class="text-truncate fw-medium">${escapeHtml(name)}</span>
+              `;
               btn.onclick = () => {
-                fillFormWithProduct(name);
+                fillFormWithProduct(name, imgUrl);
                 offSearchResults.innerHTML = '';
               };
               offSearchResults.appendChild(btn);
@@ -423,8 +440,9 @@
       }
     }
 
-    function fillFormWithProduct(name) {
+    function fillFormWithProduct(name, imageUrl = '') {
       itemNameInput.value = name;
+      selectedImageUrl = imageUrl;
       offSearchResults.innerHTML = '';
       document.getElementById('itemQty').focus();
     }
@@ -501,13 +519,22 @@
       filteredItems.forEach((item) => {
         const card = document.createElement('div');
         card.className = 'card inventory-card border-0 shadow-sm rounded-4 p-3 bg-body';
+
+        // Produktbild oder Emoji-Placeholder
+        const imageElement = item.image 
+          ? `<img src="${escapeHtml(item.image)}" alt="" class="rounded-3 product-img flex-shrink-0 border">`
+          : `<div class="rounded-3 bg-body-tertiary d-flex align-items-center justify-content-center flex-shrink-0 border product-img text-muted fs-4">📦</div>`;
+
         card.innerHTML = `
           <div class="row align-items-center g-2">
-            <!-- Artikelname -->
-            <div class="col-12 col-md-4 mb-3">
-              <span class="fw-bold text-body fs-6 text-truncate d-block" title="${escapeHtml(item.name)}">
-                ${escapeHtml(item.name)}
-              </span>
+            <!-- Artikelname mit Bild -->
+            <div class="col-12 col-md-4">
+              <div class="d-flex align-items-center gap-3">
+                ${imageElement}
+                <span class="fw-bold text-body fs-6 text-truncate d-block" title="${escapeHtml(item.name)}">
+                  ${escapeHtml(item.name)}
+                </span>
+              </div>
             </div>
 
             <!-- Mobile Sub-Info & Desktop Spalten -->
@@ -572,7 +599,15 @@
       const mhd = document.getElementById('itemMhd').value;
       const location = document.getElementById('itemLocation').value;
 
-      inventory.push({ name, qty, mhd, location });
+      inventory.push({ 
+        name, 
+        qty, 
+        mhd, 
+        location, 
+        image: selectedImageUrl 
+      });
+
+      selectedImageUrl = ''; // Nach Speichern zurücksetzen
       renderTable();
       form.reset();
       triggerAutoSave();
