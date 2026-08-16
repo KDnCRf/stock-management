@@ -254,5 +254,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Fuchs Garam Masala",
+    "qty": 1,
+    "mhd": "2029-04-30",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/402/790/011/5982/front_de.10.200.jpg"
   }
 ]
