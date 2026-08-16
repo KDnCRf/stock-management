@@ -102,5 +102,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/1460/front_de.15.200.jpg"
+  },
+  {
+    "name": "Ostmann Gewürz Curry (gemahlen)",
+    "qty": 1,
+    "mhd": "2029-06-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/2047/front_de.58.200.jpg"
   }
 ]
