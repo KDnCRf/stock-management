@@ -70,5 +70,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/3952/front_de.44.200.jpg"
+  },
+  {
+    "name": "Ostmann Cayenne Pfeffer",
+    "qty": 1,
+    "mhd": "2026-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1507/front_de.46.200.jpg"
   }
 ]
