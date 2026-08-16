@@ -142,5 +142,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/1774/front_de.54.200.jpg"
+  },
+  {
+    "name": "Ostmann Estragon, gerebelt",
+    "qty": 1,
+    "mhd": "2024-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/2252/front_de.28.200.jpg"
   }
 ]
