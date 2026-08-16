@@ -54,5 +54,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/000/004/052/6263/front_en.12.200.jpg"
+  },
+  {
+    "name": "Ostmanns Thymian gerebelt",
+    "qty": 1,
+    "mhd": "2028-10-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/5802/front_de.35.200.jpg"
   }
 ]
