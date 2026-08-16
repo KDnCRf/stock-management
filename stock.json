@@ -174,5 +174,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/1934/front_de.5.200.jpg"
+  },
+  {
+    "name": "Hartkorn Paprika Scharf",
+    "qty": 1,
+    "mhd": "2028-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/000/004/052/6270/front_de.3.200.jpg"
   }
 ]
