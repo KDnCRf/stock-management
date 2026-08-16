@@ -38,5 +38,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Potluck Mini Avocado Spice",
+    "qty": 1,
+    "mhd": "2029-07-02",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": ""
   }
 ]
