@@ -1,10 +1,11 @@
 [
   {
-    "name": "Ostermann Gewürz Curry (gemahlen)",
+    "name": "Ostmann Gewürz Curry (gemahlen",
     "qty": 1,
     "mhd": "2030-04-16",
     "location": "Vorratsschrank",
-    "image": "https://images.openfoodfacts.org/images/products/400/267/404/2047/front_de.58.200.jpg"
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/2047/front_de.58.200.jpg",
+    "status": "verpackt"
   },
   {
     "name": "Hartkorn Kreuzkümmel „Cumin“ gemahlen",
