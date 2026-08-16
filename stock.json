@@ -182,5 +182,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/000/004/052/6270/front_de.3.200.jpg"
+  },
+  {
+    "name": "Filiere Safran de Taliouine",
+    "qty": 1,
+    "mhd": "2027-11-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
