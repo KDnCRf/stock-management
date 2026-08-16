@@ -12,8 +12,9 @@
   
   <title>Lebensmittelverwalter</title>
   
-  <!-- Bootstrap 5 CSS -->
+  <!-- Bootstrap 5 CSS & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <!-- HTML5-QRCode Scanner Bibliothek -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -28,34 +29,20 @@
   </script>
 
   <style>
-    /* Custom Styling für Touch-Layout und Bilder */
     .inventory-card {
       transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
     .inventory-card:hover {
       border-color: var(--bs-border-color-translucent);
     }
-    .qty-btn {
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-    .delete-btn {
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
     .product-img {
       width: 48px;
       height: 48px;
       object-fit: cover;
+    }
+    .save-indicator {
+      font-size: 1.25rem;
+      transition: color 0.3s ease;
     }
   </style>
 </head>
@@ -64,19 +51,26 @@
   <div class="container-md max-width-lg">
     <!-- Header -->
     <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-      <h1 class="h3 mb-0 fw-bold">🍏 Vorrat</h1>
-      <div class="d-flex align-items-center gap-2">
-        <span id="fileStatus" class="badge rounded-pill bg-secondary px-3 py-2 fs-6">Nicht verbunden</span>
-        <button id="btnSettings" class="btn btn-outline-secondary btn-sm rounded-circle p-2" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Einstellungen">⚙️</button>
+      <h1 class="h3 mb-0 fw-bold d-flex align-items-center gap-2">
+        <i class="bi bi-basket2-fill text-success"></i> Vorrat
+      </h1>
+      <div class="d-flex align-items-center gap-3">
+        <!-- Dezentes Disketten-Icon als Statusanzeige -->
+        <div id="saveStatus" class="d-flex align-items-center gap-1 text-secondary" title="Status: Initialisieren...">
+          <i id="saveIcon" class="bi bi-floppy-fill save-indicator text-secondary"></i>
+        </div>
+        <button id="btnSettings" class="btn btn-outline-secondary btn-sm rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:38px; height:38px;" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Einstellungen">
+          <i class="bi bi-gear-fill"></i>
+        </button>
       </div>
     </header>
 
-    <!-- Modal für Kamera-Kader -->
-    <div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
+    <!-- Modal für Barcode Scanner -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow">
           <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title h6 fw-bold" id="scannerModalLabel">📷 Barcode scannen</h5>
+            <h5 class="modal-title h6 fw-bold"><i class="bi bi-qr-code-scan me-2"></i>Barcode scannen</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" id="btnCloseScanner" aria-label="Schließen"></button>
           </div>
           <div class="modal-body p-3 text-center">
@@ -87,11 +81,11 @@
     </div>
 
     <!-- Modal für GitHub-Einstellungen -->
-    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow">
           <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title h6 fw-bold" id="settingsModalLabel">⚙️ GitHub Verbinden</h5>
+            <h5 class="modal-title h6 fw-bold"><i class="bi bi-github me-2"></i>GitHub Verbinden</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
           </div>
           <div class="modal-body p-3">
@@ -119,32 +113,98 @@
       </div>
     </div>
 
+    <!-- Modal zum Bearbeiten / Löschen eines Artikels -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title h6 fw-bold"><i class="bi bi-pencil-square me-2"></i>Artikel bearbeiten</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+          </div>
+          <div class="modal-body p-3">
+            <form id="editItemForm">
+              <input type="hidden" id="editIndex">
+              
+              <div class="mb-3">
+                <label class="form-label small mb-1 fw-medium">Artikelname</label>
+                <input type="text" id="editName" class="form-control rounded-3" required>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1 fw-medium">Menge</label>
+                  <input type="number" id="editQty" class="form-control rounded-3" min="1" required>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1 fw-medium">MHD</label>
+                  <input type="date" id="editMhd" class="form-control rounded-3">
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small mb-1 fw-medium">Ablageort</label>
+                  <select id="editLocation" class="form-select rounded-3" required>
+                    <option value="Kühlschrank">Kühlschrank</option>
+                    <option value="Gefrierschrank">Gefrierschrank</option>
+                    <option value="Vorratsschrank">Vorratsschrank</option>
+                    <option value="Keller">Keller</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small mb-1 fw-medium">Zustand</label>
+                  <select id="editStatus" class="form-select rounded-3" required>
+                    <option value="verpackt">Original verpackt</option>
+                    <option value="angebrochen">Angebrochen</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 pt-2 border-top">
+                <button type="button" class="btn btn-outline-danger rounded-3" id="btnDeleteFromModal">
+                  <i class="bi bi-trash me-1"></i> Löschen
+                </button>
+                <button type="submit" class="btn btn-primary rounded-3 flex-grow-1">
+                  <i class="bi bi-check-lg me-1"></i> Speichern
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Formular zum Hinzufügen -->
     <div class="card mb-4 border-0 shadow-sm rounded-4">
       <div class="card-body p-3 p-md-4">
-        <h2 class="h6 fw-bold mb-3">Neues Lebensmittel hinzufügen</h2>
+        <h2 class="h6 fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i> Neues Lebensmittel hinzufügen</h2>
         <form id="addItemForm" class="row g-2 g-md-3">
-          <!-- Kombiniertes Artikel- / Barcode-Feld -->
-          <div class="col-12 col-md-5 position-relative">
+          <!-- Artikel / Barcode -->
+          <div class="col-12 col-md-4 position-relative">
             <div class="input-group">
               <input type="text" id="itemName" class="form-control form-control-lg rounded-start-3" placeholder="Artikel oder Barcode..." required autocomplete="off">
-              <button class="btn btn-outline-secondary border-end-0" type="button" id="btnStartScan" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Barcode scannen">📷</button>
-              <button class="btn btn-outline-secondary rounded-end-3" type="button" id="btnOffSearch" title="In Datenbank suchen">🔍</button>
+              <button class="btn btn-outline-secondary border-end-0" type="button" id="btnStartScan" data-bs-toggle="modal" data-bs-target="#scannerModal" title="Barcode scannen">
+                <i class="bi bi-camera"></i>
+              </button>
+              <button class="btn btn-outline-secondary rounded-end-3" type="button" id="btnOffSearch" title="In Datenbank suchen">
+                <i class="bi bi-search"></i>
+              </button>
             </div>
             <div id="offSearchResults" class="list-group position-absolute w-100 shadow mt-1 rounded-3" style="z-index: 1050; max-height: 220px; overflow-y: auto;"></div>
           </div>
 
-          <div class="col-6 col-md-2">
+          <div class="col-4 col-md-2">
             <input type="number" id="itemQty" class="form-control form-control-lg rounded-3" placeholder="Menge" value="1" min="1" required>
           </div>
 
-          <div class="col-6 col-md-2">
+          <div class="col-8 col-md-2">
             <input type="date" id="itemMhd" class="form-control form-control-lg rounded-3" title="Mindesthaltbarkeitsdatum">
           </div>
 
-          <div class="col-12 col-md-3">
+          <div class="col-6 col-md-2">
             <select id="itemLocation" class="form-select form-select-lg rounded-3" required>
-              <option value="" disabled selected>Ablageort...</option>
+              <option value="" disabled selected>Ort...</option>
               <option value="Kühlschrank">Kühlschrank</option>
               <option value="Gefrierschrank">Gefrierschrank</option>
               <option value="Vorratsschrank">Vorratsschrank</option>
@@ -153,8 +213,17 @@
             </select>
           </div>
 
+          <div class="col-6 col-md-2">
+            <select id="itemStatus" class="form-select form-select-lg rounded-3" required>
+              <option value="verpackt" selected>Verpackt</option>
+              <option value="angebrochen">Angebrochen</option>
+            </select>
+          </div>
+
           <div class="col-12">
-            <button type="submit" class="btn btn-success btn-lg rounded-3 w-100 fw-medium">Hinzufügen</button>
+            <button type="submit" class="btn btn-success btn-lg rounded-3 w-100 fw-medium">
+              <i class="bi bi-plus-lg me-1"></i> Hinzufügen
+            </button>
           </div>
         </form>
       </div>
@@ -163,19 +232,12 @@
     <!-- Suchfeld für Vorratsliste -->
     <div class="mb-3">
       <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
-        <span class="input-group-text bg-body border-0 ps-3">🔍</span>
-        <input type="text" id="filterInput" class="form-control border-0 bg-body shadow-none" placeholder="Vorräte durchsuchen (Name oder Ort)...">
-        <button class="btn btn-link text-body-tertiary text-decoration-none border-0 bg-body pe-3" type="button" id="btnClearFilter" title="Filter zurücksetzen">&times;</button>
+        <span class="input-group-text bg-body border-0 ps-3"><i class="bi bi-search text-secondary"></i></span>
+        <input type="text" id="filterInput" class="form-control border-0 bg-body shadow-none" placeholder="Vorräte durchsuchen...">
+        <button class="btn btn-link text-body-tertiary text-decoration-none border-0 bg-body pe-3" type="button" id="btnClearFilter" title="Filter zurücksetzen">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
-    </div>
-
-    <!-- Tabellen-Header auf Desktop / Liste auf Mobile -->
-    <div class="d-none d-md-flex row px-3 py-2 text-secondary small fw-semibold text-uppercase tracking-wider">
-      <div class="col-md-4">Artikel</div>
-      <div class="col-md-3 text-center">Menge</div>
-      <div class="col-md-2">MHD</div>
-      <div class="col-md-2">Ort</div>
-      <div class="col-md-1 text-end">Aktion</div>
     </div>
 
     <!-- Dynamische Vorratsliste -->
@@ -191,7 +253,8 @@
 
   <script>
     // --- DOM Elemente ---
-    const fileStatus = document.getElementById('fileStatus');
+    const saveIcon = document.getElementById('saveIcon');
+    const saveStatus = document.getElementById('saveStatus');
     const form = document.getElementById('addItemForm');
     const inventoryContainer = document.getElementById('inventoryContainer');
     const settingsForm = document.getElementById('settingsForm');
@@ -201,6 +264,7 @@
     const offSearchResults = document.getElementById('offSearchResults');
     const scannerModal = document.getElementById('scannerModal');
     const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
+    const editItemModal = new bootstrap.Modal(document.getElementById('editItemModal'));
 
     const filterInput = document.getElementById('filterInput');
     const btnClearFilter = document.getElementById('btnClearFilter');
@@ -209,7 +273,7 @@
     let inventory = [];
     let currentSha = null;
     let autoSaveTimer = null;
-    let selectedImageUrl = ''; // Zwischenspeicher für ausgewählte Bild-URL
+    let selectedImageUrl = '';
 
     // Helper: Base64 Utf8 Encoding/Decoding
     const utf8ToBase64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
@@ -244,13 +308,22 @@
       loadFromGitHub();
     });
 
+    // --- Status-Anzeige Aktualisierung ---
+    function setSaveState(state, tooltip) {
+      saveStatus.title = tooltip;
+      if (state === 'saved') {
+        saveIcon.className = 'bi bi-floppy-fill save-indicator text-success';
+      } else if (state === 'saving' || state === 'unsaved') {
+        saveIcon.className = 'bi bi-floppy save-indicator text-warning';
+      } else if (state === 'error') {
+        saveIcon.className = 'bi bi-floppy-fill save-indicator text-danger';
+      }
+    }
+
     // --- Auto-Save Logik ---
     function triggerAutoSave() {
-      fileStatus.textContent = 'Ungespeichert...';
-      fileStatus.className = 'badge rounded-pill bg-warning text-dark px-3 py-2 fs-6';
-      
+      setSaveState('unsaved', 'Ungespeicherte Änderungen...');
       clearTimeout(autoSaveTimer);
-
       autoSaveTimer = setTimeout(() => {
         saveToGitHub();
       }, 1500);
@@ -260,15 +333,13 @@
     async function loadFromGitHub() {
       const cfg = getGHConfig();
       if (!cfg.owner || !cfg.repo || !cfg.token) {
-        fileStatus.textContent = 'Token fehlt';
-        fileStatus.className = 'badge rounded-pill bg-warning text-dark px-3 py-2 fs-6';
-        inventoryContainer.innerHTML = '<div class="card border-0 shadow-sm rounded-4 text-center py-5 text-muted">Klicke oben auf "⚙️ Token", um GitHub zu verbinden.</div>';
+        setSaveState('error', 'Token fehlt!');
+        inventoryContainer.innerHTML = '<div class="card border-0 shadow-sm rounded-4 text-center py-5 text-muted">Klicke oben auf <i class="bi bi-gear-fill"></i>, um GitHub zu verbinden.</div>';
         settingsModal.show();
         return;
       }
 
-      fileStatus.textContent = 'Lade...';
-      fileStatus.className = 'badge rounded-pill bg-info px-3 py-2 fs-6';
+      setSaveState('saving', 'Lade Daten...');
 
       try {
         const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`, {
@@ -281,8 +352,7 @@
         if (res.status === 404) {
           inventory = [];
           currentSha = null;
-          fileStatus.textContent = 'Bereit';
-          fileStatus.className = 'badge rounded-pill bg-success px-3 py-2 fs-6';
+          setSaveState('saved', 'Bereit (Neues Repo)');
           renderTable();
           return;
         }
@@ -294,12 +364,10 @@
         const jsonText = base64ToUtf8(data.content.replace(/\n/g, ''));
         inventory = JSON.parse(jsonText);
 
-        fileStatus.textContent = 'Synchronisiert';
-        fileStatus.className = 'badge rounded-pill bg-success px-3 py-2 fs-6';
+        setSaveState('saved', 'Synchronisiert');
         renderTable();
       } catch (err) {
-        fileStatus.textContent = 'Sync Fehler';
-        fileStatus.className = 'badge rounded-pill bg-danger px-3 py-2 fs-6';
+        setSaveState('error', `Fehler: ${err.message}`);
         inventoryContainer.innerHTML = `<div class="card border-0 shadow-sm rounded-4 text-center py-5 text-danger">Fehler beim Laden: ${escapeHtml(err.message)}</div>`;
       }
     }
@@ -308,8 +376,7 @@
       const cfg = getGHConfig();
       if (!cfg.owner || !cfg.repo || !cfg.token) return;
 
-      fileStatus.textContent = 'Speichert...';
-      fileStatus.className = 'badge rounded-pill bg-info px-3 py-2 fs-6';
+      setSaveState('saving', 'Speichert...');
 
       try {
         const jsonString = JSON.stringify(inventory, null, 2);
@@ -336,11 +403,9 @@
         const resData = await res.json();
         currentSha = resData.content.sha;
 
-        fileStatus.textContent = 'Gespeichert';
-        fileStatus.className = 'badge rounded-pill bg-success px-3 py-2 fs-6';
+        setSaveState('saved', 'Erfolgreich gespeichert');
       } catch (err) {
-        fileStatus.textContent = 'Speicherfehler';
-        fileStatus.className = 'badge rounded-pill bg-danger px-3 py-2 fs-6';
+        setSaveState('error', 'Speicherfehler!');
       }
     }
 
@@ -382,7 +447,7 @@
 
     scannerModal.addEventListener('hide.bs.modal', stopScanner);
 
-    // --- Open Food Facts API (inkl. Bildabruf) ---
+    // --- Open Food Facts API ---
     async function searchOpenFoodFacts(query) {
       offSearchResults.innerHTML = '';
       if (!query.trim()) return;
@@ -419,7 +484,7 @@
               
               const imgTag = imgUrl 
                 ? `<img src="${escapeHtml(imgUrl)}" class="rounded flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;">`
-                : `<span class="flex-shrink-0 text-center" style="width: 32px; font-size: 1.2rem;">📦</span>`;
+                : `<div class="rounded bg-body-tertiary flex-shrink-0 d-flex align-items-center justify-content-center text-secondary" style="width: 32px; height: 32px;"><i class="bi bi-box-seam"></i></div>`;
 
               btn.innerHTML = `
                 ${imgTag}
@@ -465,9 +530,9 @@
       }
     });
 
-    // --- Formatierung & Farblogik für MHD ---
+    // --- MHD Badges ---
     function getMhdBadge(mhdStr) {
-      if (!mhdStr) return '<span class="text-body-tertiary small">MHD -</span>';
+      if (!mhdStr) return '<span class="text-body-tertiary small">Kein MHD</span>';
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -485,12 +550,20 @@
       });
 
       if (diffDays < 0) {
-        return `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" title="Abgelaufen">⚠️ ${formattedDate}</span>`;
+        return `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" title="Abgelaufen"><i class="bi bi-exclamation-triangle-fill me-1"></i>${formattedDate}</span>`;
       } else if (diffDays <= 7) {
-        return `<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" title="Ablauf nahe">⏳ ${formattedDate}</span>`;
+        return `<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" title="Ablauf nahe"><i class="bi bi-hourglass-split me-1"></i>${formattedDate}</span>`;
       } else {
-        return `<span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1" title="Haltbar">✓ ${formattedDate}</span>`;
+        return `<span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1" title="Haltbar"><i class="bi bi-check-circle me-1"></i>${formattedDate}</span>`;
       }
+    }
+
+    // --- Status Badges (Verpackt / Angebrochen) ---
+    function getStatusBadge(status) {
+      if (status === 'angebrochen') {
+        return `<span class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1"><i class="bi bi-box-seam-fill me-1"></i>Angebrochen</span>`;
+      }
+      return `<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1"><i class="bi bi-box-seam me-1"></i>Verpackt</span>`;
     }
 
     // --- Responsive Rendering ---
@@ -520,77 +593,87 @@
         const card = document.createElement('div');
         card.className = 'card inventory-card border-0 shadow-sm rounded-4 p-3 bg-body';
 
-        // Produktbild oder Emoji-Placeholder
         const imageElement = item.image 
           ? `<img src="${escapeHtml(item.image)}" alt="" class="rounded-3 product-img flex-shrink-0 border">`
-          : `<div class="rounded-3 bg-body-tertiary d-flex align-items-center justify-content-center flex-shrink-0 border product-img text-muted fs-4">📦</div>`;
+          : `<div class="rounded-3 bg-body-tertiary d-flex align-items-center justify-content-center flex-shrink-0 border product-img text-secondary fs-4"><i class="bi bi-box-seam"></i></div>`;
 
         card.innerHTML = `
-          <div class="row align-items-center g-2">
-            <!-- Artikelname mit Bild -->
-            <div class="col-12 col-md-4">
-              <div class="d-flex align-items-center gap-3">
-                ${imageElement}
-                <span class="fw-bold text-body fs-6 text-truncate d-block" title="${escapeHtml(item.name)}">
-                  ${escapeHtml(item.name)}
-                </span>
-              </div>
-            </div>
-
-            <!-- Mobile Sub-Info & Desktop Spalten -->
-            <div class="col-12 col-md-8">
-              <div class="row align-items-center g-2">
-                
-                <!-- Menge Controls -->
-                <div class="col-6 col-md-4 order-1 order-md-1">
-                  <div class="d-inline-flex align-items-center bg-body-tertiary rounded-pill p-1 border">
-                    <button class="btn btn-sm btn-light rounded-circle shadow-sm qty-btn" onclick="updateQty(${item.originalIndex}, -1)">-</button>
-                    <span class="px-3 fw-bold text-body fs-6">${item.qty}</span>
-                    <button class="btn btn-sm btn-light rounded-circle shadow-sm qty-btn" onclick="updateQty(${item.originalIndex}, 1)">+</button>
-                  </div>
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <!-- Bild & Details -->
+            <div class="d-flex align-items-center gap-3 overflow-hidden flex-grow-1">
+              ${imageElement}
+              <div class="overflow-hidden">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fw-bold text-body fs-6 text-truncate d-block" title="${escapeHtml(item.name)}">
+                    ${escapeHtml(item.name)}
+                  </span>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">${item.qty}x</span>
                 </div>
-
-                <!-- MHD -->
-                <div class="col-6 col-md-3 order-2 order-md-2 text-end text-md-start">
+                <div class="d-flex flex-wrap align-items-center gap-1 gap-md-2">
                   ${getMhdBadge(item.mhd)}
+                  <span class="badge rounded-pill bg-body-secondary text-body-tertiary border px-2 py-1">${escapeHtml(item.location)}</span>
+                  ${getStatusBadge(item.status)}
                 </div>
-
-                <!-- Ort -->
-                <div class="col-8 col-md-3 order-3 order-md-3 mt-2 mt-md-0">
-                  <span class="badge rounded-pill bg-body-secondary text-body-tertiary border px-2 py-1 fw-medium">${escapeHtml(item.location)}</span>
-                </div>
-
-                <!-- Löschen -->
-                <div class="col-4 col-md-2 order-4 order-md-4 text-end mt-2 mt-md-0">
-                  <button class="btn btn-outline-danger btn-sm rounded-circle delete-btn" onclick="removeItem(${item.originalIndex})" title="Löschen">&times;</button>
-                </div>
-
               </div>
             </div>
+
+            <!-- Menü Icon Button -->
+            <button class="btn btn-outline-secondary btn-sm rounded-circle p-2 flex-shrink-0 d-flex align-items-center justify-content-center" 
+                    style="width: 38px; height: 38px;" 
+                    onclick="openEditModal(${item.originalIndex})" 
+                    title="Optionen">
+              <i class="bi bi-three-dots-vertical fs-6"></i>
+            </button>
           </div>
         `;
         inventoryContainer.appendChild(card);
       });
     }
 
+    // --- Modal Bearbeiten Logik ---
+    window.openEditModal = (index) => {
+      const item = inventory[index];
+      document.getElementById('editIndex').value = index;
+      document.getElementById('editName').value = item.name;
+      document.getElementById('editQty').value = item.qty;
+      document.getElementById('editMhd').value = item.mhd || '';
+      document.getElementById('editLocation').value = item.location;
+      document.getElementById('editStatus').value = item.status || 'verpackt';
+
+      editItemModal.show();
+    };
+
+    document.getElementById('editItemForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const index = parseInt(document.getElementById('editIndex').value);
+      
+      inventory[index].name = document.getElementById('editName').value.trim();
+      inventory[index].qty = parseInt(document.getElementById('editQty').value);
+      inventory[index].mhd = document.getElementById('editMhd').value;
+      inventory[index].location = document.getElementById('editLocation').value;
+      inventory[index].status = document.getElementById('editStatus').value;
+
+      editItemModal.hide();
+      renderTable();
+      triggerAutoSave();
+    });
+
+    document.getElementById('btnDeleteFromModal').addEventListener('click', () => {
+      const index = parseInt(document.getElementById('editIndex').value);
+      if (confirm('Möchtest du diesen Artikel wirklich löschen?')) {
+        inventory.splice(index, 1);
+        editItemModal.hide();
+        renderTable();
+        triggerAutoSave();
+      }
+    });
+
+    // --- Filter & Hinzufügen ---
     filterInput.addEventListener('input', renderTable);
     btnClearFilter.addEventListener('click', () => {
       filterInput.value = '';
       renderTable();
     });
-
-    window.updateQty = (index, delta) => {
-      inventory[index].qty += delta;
-      if (inventory[index].qty <= 0) inventory.splice(index, 1);
-      renderTable();
-      triggerAutoSave();
-    };
-
-    window.removeItem = (index) => {
-      inventory.splice(index, 1);
-      renderTable();
-      triggerAutoSave();
-    };
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -598,18 +681,21 @@
       const qty = parseInt(document.getElementById('itemQty').value);
       const mhd = document.getElementById('itemMhd').value;
       const location = document.getElementById('itemLocation').value;
+      const status = document.getElementById('itemStatus').value;
 
       inventory.push({ 
         name, 
         qty, 
         mhd, 
         location, 
+        status,
         image: selectedImageUrl 
       });
 
-      selectedImageUrl = ''; // Nach Speichern zurücksetzen
+      selectedImageUrl = '';
       renderTable();
       form.reset();
+      document.getElementById('itemQty').value = 1;
       triggerAutoSave();
     });
 
@@ -617,7 +703,7 @@
       return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // Beim Start Einstellungen füllen & Daten abrufen
+    // Start
     window.addEventListener('DOMContentLoaded', () => {
       fillSettingsForm();
       loadFromGitHub();
