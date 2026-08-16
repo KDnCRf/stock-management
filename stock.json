@@ -134,5 +134,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/000/004/052/6218/front_de.8.200.jpg"
+  },
+  {
+    "name": "Ostmann Koriandersaat gemahlen",
+    "qty": 1,
+    "mhd": "2026-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1774/front_de.54.200.jpg"
   }
 ]
