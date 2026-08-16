@@ -270,5 +270,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": ""
+  },
+  {
+    "name": "Just Spices Avocado Topping",
+    "qty": 1,
+    "mhd": "2026-08-05",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
