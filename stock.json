@@ -62,5 +62,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/5802/front_de.35.200.jpg"
+  },
+  {
+    "name": "Ostmann Oregano",
+    "qty": 1,
+    "mhd": "2029-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/3952/front_de.44.200.jpg"
   }
 ]
