@@ -238,5 +238,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Maggi Pfeffer Sauce",
+    "qty": 1,
+    "mhd": "2024-01-01",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": ""
   }
 ]
