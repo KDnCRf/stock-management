@@ -214,5 +214,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": ""
+  },
+  {
+    "name": "Kardamom",
+    "qty": 1,
+    "mhd": "",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
