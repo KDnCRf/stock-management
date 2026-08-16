@@ -168,7 +168,7 @@
     let html5QrCode = null;
     let inventory = [];
     let currentSha = null;
-    let autoSaveTimer = null; // Timer für automatische Speicherung
+    let autoSaveTimer = null;
 
     // Helper: Base64 Utf8 Encoding/Decoding
     const utf8ToBase64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
@@ -205,16 +205,13 @@
 
     // --- Auto-Save Logik ---
     function triggerAutoSave() {
-      // Status anzeigen
       fileStatus.textContent = 'Ungespeichert...';
       fileStatus.className = 'badge bg-warning text-dark';
       
-      // Vorherigen Timer abbrechen, falls der Nutzer erneut geklickt hat
       clearTimeout(autoSaveTimer);
 
-      // Nach 1.5 Sekunden Inaktivität automatisch speichern
       autoSaveTimer = setTimeout(() => {
-        saveToGitHub(true); // silent = true
+        saveToGitHub(true);
       }, 1500);
     }
 
@@ -304,7 +301,6 @@
         fileStatus.textContent = 'Gespeichert';
         fileStatus.className = 'badge bg-success';
 
-        // Bei manuellem Klick weiterhin Alert anzeigen
         if (!isAutoSave) alert('Erfolgreich auf GitHub gespeichert!');
       } catch (err) {
         fileStatus.textContent = 'Speicherfehler';
@@ -317,8 +313,8 @@
 
     btnSave.addEventListener('click', () => saveToGitHub(false));
 
-    // --- Barcode Scanner Logik ---
-    scannerModal._element.addEventListener('shown.bs.modal', async () => {
+    // --- Barcode Scanner Logik (Korrektur ohne ._element) ---
+    scannerModal.addEventListener('shown.bs.modal', async () => {
       if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
       
       const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
@@ -329,7 +325,7 @@
           config,
           async (decodedText) => {
             await stopScanner();
-            const modalInstance = bootstrap.Modal.getInstance(scannerModal._element);
+            const modalInstance = bootstrap.Modal.getInstance(scannerModal);
             if (modalInstance) modalInstance.hide();
 
             offSearchInput.value = decodedText;
@@ -339,7 +335,7 @@
         );
       } catch (err) {
         alert("Kamera-Zugriff nicht möglich.");
-        const modalInstance = bootstrap.Modal.getInstance(scannerModal._element);
+        const modalInstance = bootstrap.Modal.getInstance(scannerModal);
         if (modalInstance) modalInstance.hide();
       }
     });
@@ -353,7 +349,7 @@
       }
     }
 
-    scannerModal._element.addEventListener('hide.bs.modal', stopScanner);
+    scannerModal.addEventListener('hide.bs.modal', stopScanner);
 
     // --- Open Food Facts API ---
     async function searchOpenFoodFacts(query) {
@@ -455,13 +451,13 @@
       inventory[index].qty += delta;
       if (inventory[index].qty <= 0) inventory.splice(index, 1);
       renderTable();
-      triggerAutoSave(); // Auto-Save auslösen
+      triggerAutoSave();
     };
 
     window.removeItem = (index) => {
       inventory.splice(index, 1);
       renderTable();
-      triggerAutoSave(); // Auto-Save auslösen
+      triggerAutoSave();
     };
 
     form.addEventListener('submit', (e) => {
@@ -473,7 +469,7 @@
       inventory.push({ name, qty, location });
       renderTable();
       form.reset();
-      triggerAutoSave(); // Auto-Save auslösen
+      triggerAutoSave();
     });
 
     function escapeHtml(text) {
