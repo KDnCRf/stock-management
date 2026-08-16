@@ -110,5 +110,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/2047/front_de.58.200.jpg"
+  },
+  {
+    "name": "Ostmann Pfeffer schwarz gemahlen",
+    "qty": 1,
+    "mhd": "2029-11-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/4676/front_de.29.200.jpg"
   }
 ]
