@@ -13,5 +13,13 @@
     "location": "Vorratsschrank",
     "image": "https://images.openfoodfacts.org/images/products/000/004/052/6782/front_de.6.200.jpg",
     "status": "angebrochen"
+  },
+  {
+    "name": "Ostmann Kreuzkümmel (Cumin) gemahlen",
+    "qty": 1,
+    "mhd": "2030-02-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/267/404/1910/front_de.59.200.jpg"
   }
 ]
