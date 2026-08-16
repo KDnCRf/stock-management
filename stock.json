@@ -190,5 +190,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": ""
+  },
+  {
+    "name": "Zimt",
+    "qty": 1,
+    "mhd": "",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": ""
   }
 ]
