@@ -150,5 +150,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/267/404/2252/front_de.28.200.jpg"
+  },
+  {
+    "name": "Hartkorn Basilikum - gerebelt",
+    "qty": 1,
+    "mhd": "2027-01-01",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/000/004/052/6010/front_de.6.200.jpg"
   }
 ]
