@@ -3,5 +3,11 @@
     "name": "cola",
     "qty": 1,
     "location": "Vorratsschrank"
+  },
+  {
+    "name": "fanta",
+    "qty": 1,
+    "mhd": "2026-09-24",
+    "location": "Kühlschrank"
   }
 ]
