@@ -30,5 +30,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/426/034/789/3338/front_de.8.200.jpg"
+  },
+  {
+    "name": "Ankerkraut Scharfe Braut",
+    "qty": 1,
+    "mhd": "2029-04-02",
+    "location": "Vorratsschrank",
+    "status": "verpackt",
+    "image": ""
   }
 ]
