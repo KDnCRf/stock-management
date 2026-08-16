@@ -11,6 +11,7 @@
     "qty": 1,
     "mhd": "2029-01-01",
     "location": "Vorratsschrank",
-    "image": "https://images.openfoodfacts.org/images/products/000/004/052/6782/front_de.6.200.jpg"
+    "image": "https://images.openfoodfacts.org/images/products/000/004/052/6782/front_de.6.200.jpg",
+    "status": "angebrochen"
   }
 ]
