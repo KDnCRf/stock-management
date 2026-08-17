@@ -286,5 +286,13 @@
     "location": "Vorratsschrank",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/400/054/000/1341/front_de.107.200.jpg"
+  },
+  {
+    "name": "Früchte Hafer-Müsli",
+    "qty": 1,
+    "mhd": "",
+    "location": "Keller",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/400/054/000/1341/front_de.107.200.jpg"
   }
 ]
