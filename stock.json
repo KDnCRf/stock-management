@@ -302,5 +302,13 @@
     "location": "Kühlschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/402/740/014/8008/front_en.38.200.jpg"
+  },
+  {
+    "name": "orthomol immun Granulat",
+    "qty": 30,
+    "mhd": "2027-04-17",
+    "location": "Sonstiges",
+    "status": "verpackt",
+    "image": ""
   }
 ]
