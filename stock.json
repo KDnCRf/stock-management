@@ -294,5 +294,13 @@
     "location": "Keller",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/402/740/014/8008/front_en.38.200.jpg"
+  },
+  {
+    "name": "Gewürz Ketchup Curry",
+    "qty": 1,
+    "mhd": "",
+    "location": "Kühlschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/402/740/014/8008/front_en.38.200.jpg"
   }
 ]
