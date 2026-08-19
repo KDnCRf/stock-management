@@ -318,5 +318,13 @@
     "location": "Keller",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/400/840/040/2222/front_en.161.200.jpg"
+  },
+  {
+    "name": "Nutella 500g",
+    "qty": 1,
+    "mhd": "2027-05-13",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/840/040/2222/front_en.161.200.jpg"
   }
 ]
