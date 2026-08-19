@@ -326,5 +326,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/840/040/2222/front_en.161.200.jpg"
+  },
+  {
+    "name": "Dreyer Rapshonig 500g",
+    "qty": 1,
+    "mhd": "2028-12-09",
+    "location": "Vorratsschrank",
+    "status": "angebrochen",
+    "image": "https://images.openfoodfacts.org/images/products/400/926/500/1704/front_de.19.200.jpg"
   }
 ]
