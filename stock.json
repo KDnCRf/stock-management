@@ -334,5 +334,13 @@
     "location": "Vorratsschrank",
     "status": "angebrochen",
     "image": "https://images.openfoodfacts.org/images/products/400/926/500/1704/front_de.19.200.jpg"
+  },
+  {
+    "name": "Dreyer Rapshonig",
+    "qty": 2,
+    "mhd": "2028-12-09",
+    "location": "Keller",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/400/926/500/1704/front_de.19.200.jpg"
   }
 ]
