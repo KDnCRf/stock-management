@@ -342,13 +342,5 @@
     "location": "Keller",
     "status": "verpackt",
     "image": "https://images.openfoodfacts.org/images/products/400/926/500/1704/front_de.19.200.jpg"
-  },
-  {
-    "name": "Natürliches Mineralwasser mit Kohlensäure",
-    "qty": 1,
-    "mhd": "2026-08-19",
-    "location": "Gefrierschrank",
-    "status": "verpackt",
-    "image": "https://images.openfoodfacts.org/images/products/410/238/050/2719/front_en.8.200.jpg"
   }
 ]
