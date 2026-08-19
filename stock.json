@@ -310,5 +310,13 @@
     "location": "Sonstiges",
     "status": "verpackt",
     "image": ""
+  },
+  {
+    "name": "Nutella 500g",
+    "qty": 2,
+    "mhd": "2026-08-19",
+    "location": "Keller",
+    "status": "verpackt",
+    "image": "https://images.openfoodfacts.org/images/products/400/840/040/2222/front_en.161.200.jpg"
   }
 ]
